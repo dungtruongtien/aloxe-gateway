@@ -1,0 +1,19 @@
+sandbox:
+  enabled: true
+homepage:
+  enabled: false
+supergraph:
+  introspection: true
+  listen: 127.0.0.1:4000
+include_subgraph_errors:
+  all: true
+plugins:
+  # Enable with the header, Apollo-Expose-Query-Plan: true
+  experimental.expose_query_plan: true
+headers:
+  # Header rules for all subgraphs
+  all:
+    request:
+      # Propagate matching headers
+      - propagate:
+          matching: .*

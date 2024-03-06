@@ -1,0 +1,132 @@
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.3", for: EXECUTION)
+{
+  query: Query
+  mutation: Mutation
+}
+
+directive @join__enumValue(graph: join__Graph!) repeatable on ENUM_VALUE
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true, isInterfaceObject: Boolean! = false) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on UNION
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+type Account
+  @join__type(graph: ACCOUNT_SERVICE, key: "id")
+{
+  id: ID!
+  token: String
+}
+
+type AuthToken
+  @join__type(graph: ACCOUNT_SERVICE)
+{
+  accessToken: String
+  fullName: String
+  phoneNumber: String
+}
+
+type AuthTokenRes
+  @join__type(graph: ACCOUNT_SERVICE)
+{
+  code: String
+  message: String
+  data: AuthToken
+}
+
+type Customer
+  @join__type(graph: AUTH_SERVICE)
+{
+  id: Int
+  level: String
+  customerNo: String
+}
+
+type Driver
+  @join__type(graph: AUTH_SERVICE)
+{
+  id: Int
+  bookingType: Int
+  driverNo: String
+}
+
+type GetUserRes
+  @join__type(graph: AUTH_SERVICE)
+{
+  code: String
+  message: String
+  data: User
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  ACCOUNT_SERVICE @join__graph(name: "account-service", url: "http://localhost:4002/graphql")
+  AUTH_SERVICE @join__graph(name: "auth-service", url: "http://localhost:4003/graphql")
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+type Mutation
+  @join__type(graph: ACCOUNT_SERVICE)
+  @join__type(graph: AUTH_SERVICE)
+{
+  _empty: String
+  login(username: String, password: String): AuthTokenRes @join__field(graph: ACCOUNT_SERVICE)
+}
+
+type Query
+  @join__type(graph: ACCOUNT_SERVICE)
+  @join__type(graph: AUTH_SERVICE)
+{
+  _empty: String
+  accounts: [Account] @join__field(graph: ACCOUNT_SERVICE)
+  getUser(id: Int): GetUserRes @join__field(graph: AUTH_SERVICE)
+  me: GetUserRes @join__field(graph: AUTH_SERVICE)
+  users: [User] @join__field(graph: AUTH_SERVICE)
+}
+
+type Staff
+  @join__type(graph: AUTH_SERVICE)
+{
+  id: Int
+  title: String
+  staffNo: String
+}
+
+type User
+  @join__type(graph: AUTH_SERVICE)
+{
+  id: Int
+  fullName: String
+  phoneNumber: String
+  email: String
+  address: String
+  dob: String
+  role: Int
+  status: Int
+  staff: Staff
+  driver: Driver
+  customer: Customer
+}
